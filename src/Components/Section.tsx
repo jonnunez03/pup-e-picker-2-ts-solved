@@ -1,13 +1,17 @@
-import { ReactNode } from "react";
+import { ReactNode, useContext } from "react";
+import { DogContext } from "../Context/DogContextProvider";
 
 export const Section = ({
   label,
   children,
 }: {
-  // No more props than these two allowed
   label: string;
   children: ReactNode;
 }) => {
+  const { activeTab, onClickHandler, dogs } = useContext(DogContext);
+
+  const favoritedCount = dogs.filter((dog) => dog.isFavorite).length;
+  const unfavoritedCount = dogs.filter((dog) => !dog.isFavorite).length;
   return (
     <section id="main-section">
       <div className="container-header">
@@ -15,28 +19,28 @@ export const Section = ({
         <div className="selectors">
           {/* This should display the favorited count */}
           <div
-            className={`selector ${"active"}`}
-            onClick={() => {
-              alert("click favorited");
-            }}
+            className={`selector ${
+              activeTab === "selectedFav" ? "active" : ""
+            }`}
+            onClick={() => onClickHandler(true, false)}
           >
-            favorited ( {0} )
+            favorited ( {favoritedCount} )
           </div>
 
           {/* This should display the unfavorited count */}
           <div
-            className={`selector ${""}`}
-            onClick={() => {
-              alert("click unfavorited");
-            }}
+            className={`selector ${
+              activeTab === "selectedUnFav" ? "active" : ""
+            }`}
+            onClick={() => onClickHandler(false, false)}
           >
-            unfavorited ( {10} )
+            unfavorited ( {unfavoritedCount} )
           </div>
           <div
-            className={`selector ${""}`}
-            onClick={() => {
-              alert("clicked create dog");
-            }}
+            className={`selector ${
+              activeTab === "selectedCreateDog" ? "active" : ""
+            }`}
+            onClick={() => onClickHandler(true, true)}
           >
             create dog
           </div>
