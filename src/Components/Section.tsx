@@ -8,10 +8,8 @@ export const Section = ({
   label: string;
   children: ReactNode;
 }) => {
-  const { activeTab, onClickHandler, dogs } = useContext(DogContext);
+  const { activeTab, onClickHandler, counters } = useContext(DogContext);
 
-  const favoritedCount = dogs.filter((dog) => dog.isFavorite).length;
-  const unfavoritedCount = dogs.filter((dog) => !dog.isFavorite).length;
   return (
     <section id="main-section">
       <div className="container-header">
@@ -19,28 +17,22 @@ export const Section = ({
         <div className="selectors">
           {/* This should display the favorited count */}
           <div
-            className={`selector ${
-              activeTab === "selectedFav" ? "active" : ""
-            }`}
-            onClick={() => onClickHandler(true, false)}
+            className={`selector ${activeTab === "fav" ? "active" : ""}`}
+            onClick={() => onClickHandler("fav")}
           >
-            favorited ( {favoritedCount} )
+            favorited ( {counters.favDogs} )
           </div>
 
           {/* This should display the unfavorited count */}
           <div
-            className={`selector ${
-              activeTab === "selectedUnFav" ? "active" : ""
-            }`}
-            onClick={() => onClickHandler(false, false)}
+            className={`selector ${activeTab === "unFav" ? "active" : ""}`}
+            onClick={() => onClickHandler("unFav")}
           >
-            unfavorited ( {unfavoritedCount} )
+            unfavorited ( {counters.unFavDogs} )
           </div>
           <div
-            className={`selector ${
-              activeTab === "selectedCreateDog" ? "active" : ""
-            }`}
-            onClick={() => onClickHandler(true, true)}
+            className={`selector ${activeTab === "createDog" ? "active" : ""}`}
+            onClick={() => onClickHandler("createDog")}
           >
             create dog
           </div>

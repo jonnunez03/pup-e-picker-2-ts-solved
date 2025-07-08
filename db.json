@@ -11,7 +11,7 @@
       "name": "Eliane",
       "image": "/assets/dalmation.png",
       "description": "Diesel Assistant SMS Mali katal",
-      "isFavorite": false,
+      "isFavorite": true,
       "id": 1
     },
     {
@@ -32,21 +32,21 @@
       "name": "Kylie",
       "image": "/assets/cowardly.png",
       "description": "Mazda transmit enable interface Pizza realistic stealthily",
-      "isFavorite": true,
+      "isFavorite": false,
       "id": 4
     },
     {
       "name": "Savanna",
       "image": "/assets/chihuahua.avif",
       "description": "projection cheery whiteboard Martin card Cotton or Incredible",
-      "isFavorite": false,
+      "isFavorite": true,
       "id": 5
     },
     {
       "name": "Genevieve",
       "image": "/assets/cowardly.png",
       "description": "teal Cab Metrics Inverse though",
-      "isFavorite": false,
+      "isFavorite": true,
       "id": 6
     },
     {
@@ -74,7 +74,7 @@
       "name": "Omari",
       "image": "/assets/blue-heeler.png",
       "description": "Mauritania Account when discrete implement nemo Ora",
-      "isFavorite": true,
+      "isFavorite": false,
       "id": 10
     },
     {
@@ -88,28 +88,28 @@
       "name": "Nathan",
       "image": "/assets/dalmation.png",
       "description": "Hybrid Chair Architect benchmark Electronic blockchains Thorium Northeast",
-      "isFavorite": true,
+      "isFavorite": false,
       "id": 12
     },
     {
       "name": "Elyse",
       "image": "/assets/dalmation.png",
       "description": "parsing Car synthesize navigating 1080p Minivan Porsche",
-      "isFavorite": true,
+      "isFavorite": false,
       "id": 13
     },
     {
       "name": "Jaime",
       "image": "/assets/dalmation.png",
       "description": "Cab Secured bandwidth SCSI attitude",
-      "isFavorite": true,
+      "isFavorite": false,
       "id": 14
     },
     {
       "name": "Jaime",
       "image": "/assets/cowardly.png",
       "description": "boo Convertible Account Mandatory background programming drive",
-      "isFavorite": true,
+      "isFavorite": false,
       "id": 15
     },
     {
@@ -137,7 +137,7 @@
       "name": "Oswaldo",
       "image": "/assets/corgi.png",
       "description": "maroon Mercury East flat Minivan zowie 24/7",
-      "isFavorite": false,
+      "isFavorite": true,
       "id": 19
     }
   ]

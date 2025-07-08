@@ -11,37 +11,43 @@ const getAllDogs = () => {
   }).then((response) => response.json());
 };
 
-const postDog = (newDog: Dog) => {
+const postDog = (dogData: Partial<Dog>) => {
   return fetch(`${baseUrl}/dogs`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify(newDog),
+    body: JSON.stringify(dogData),
   }).then((response) => response.json());
 };
-const deleteDogRequest = (dogId: number) => {
-  return fetch(`${baseUrl}/dogs/${dogId}`, {
+
+const deleteDogRequest = (id: number) => {
+  return fetch(`${baseUrl}/dogs/${id}`, {
     method: "DELETE",
     headers: {
       "Content-Type": "application/json",
     },
-  }).then((response) => {
-    if (!response.ok) {
-      throw new Error(`Failed to delete dog with id ${dogId}`);
+  }).then((res) => {
+    if (!res.ok) {
+      throw new Error(`Failed to delete dog with id ${id}`);
     }
     return true;
   });
 };
 
-const patchFavoriteForDog = (dogId: number, update: Partial<Dog>) => {
-  return fetch(`${baseUrl}/dogs/${dogId}`, {
+const patchFavoriteForDog = (id: number, updates: Partial<Dog>) => {
+  return fetch(`${baseUrl}/dogs/${id}`, {
     method: "PATCH",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify(update),
-  }).then((response) => response.json());
+    body: JSON.stringify(updates),
+  }).then((res) => {
+    if (!res.ok) {
+      throw new Error(`Failed to update dog!`);
+    }
+    return res.json();
+  });
 };
 
 export const Requests = {

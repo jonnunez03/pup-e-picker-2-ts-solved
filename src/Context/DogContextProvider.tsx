@@ -1,16 +1,17 @@
 import { createContext, ReactNode, useEffect, useState } from "react";
-import { Dog } from "../types";
+import { Dog, TActiveTab } from "../types";
 import { Requests } from "../api";
-import toast, { CheckmarkIcon } from "react-hot-toast";
+import toast from "react-hot-toast";
 
 type TDogContext = {
-  dogs: Dog[];
   activeTab: string;
   handleUpdateRequest: (dogId: number, favState: Partial<Dog>) => void;
   handleDeleteRequest: (dogId: number) => void;
-  handlePostRequest: (newDog: Dog) => void;
-  onClickHandler: (fav: boolean, isCreateDogBtn: boolean) => void;
+  handlePostRequest: (dogData: Partial<Dog>) => Promise<boolean>;
+  onClickHandler: (value: TActiveTab) => void;
   isLoading: boolean;
+  visibleDogs: Dog[];
+  counters: { favDogs: number; unFavDogs: number };
 };
 
 export const DogContext = createContext<TDogContext>({} as TDogContext);
@@ -18,37 +19,53 @@ export const DogContext = createContext<TDogContext>({} as TDogContext);
 export const DogContextProvider = ({ children }: { children: ReactNode }) => {
   const [dogs, setDogs] = useState<Dog[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState("");
+  const [activeTab, setActiveTab] = useState<TActiveTab>("all");
+
+  const fetchDogs = () => {
+    Requests.getAllDogs()
+      .then(setDogs)
+      .catch(() => toast.error("Dogs fetching failed!"));
+  };
 
   useEffect(() => {
-    const savedTab = localStorage.getItem("activeTab");
-    if (savedTab) {
-      setActiveTab(savedTab);
-    }
-    const fetchDogs = async () => {
-      const currentDogs = await Requests.getAllDogs();
-      setDogs(currentDogs);
-    };
     fetchDogs();
   }, []);
 
-  const handlePostRequest = async (newDog: Dog) => {
-    const previousDogs = [...dogs];
-    setDogs((prevDogs) => [...prevDogs, newDog]);
+  const handlePostRequest = async (dogData: Partial<Dog>): Promise<boolean> => {
+    setIsLoading(true);
+    let previousDogs: Dog[] = [];
+
+    setDogs((prevDogs) => {
+      previousDogs = prevDogs;
+      const optimisticData: Dog = {
+        id: Date.now(),
+        isFavorite: false,
+        name: dogData.name || "Unknown Name",
+        image: dogData.image || "default-image-url.jpg",
+        description: dogData.description || "No description",
+      };
+      return [...prevDogs, optimisticData];
+    });
+
     try {
-      await Requests.postDog(newDog);
-      toast(
-        <>
-          <CheckmarkIcon /> Dog Created
-        </>
-      );
+      await Requests.postDog(dogData);
+      toast.success("The dog was added successfully!");
+      fetchDogs();
+      return true;
     } catch (error) {
+      toast.error("Unable to create dog!");
       setDogs(previousDogs);
-      toast.error("Failed to create dog");
+      fetchDogs();
+      return false;
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const handleUpdateRequest = async (dogId: number, favState: Partial<Dog>) => {
+  const handleUpdateRequest = (
+    dogId: number,
+    favState: Partial<Dog>
+  ): Promise<void> => {
     setIsLoading(true);
     const previousDogs = [...dogs];
     setDogs((prevDogs) =>
@@ -56,55 +73,65 @@ export const DogContextProvider = ({ children }: { children: ReactNode }) => {
         existingDog.id === dogId ? { ...existingDog, ...favState } : existingDog
       )
     );
-    try {
-      await Requests.patchFavoriteForDog(dogId, favState);
-    } catch (error) {
-      setDogs(previousDogs);
-      toast.error("Failed to update dog. Please try again.");
-    } finally {
-      setIsLoading(false);
-    }
+    return Requests.patchFavoriteForDog(dogId, favState)
+      .then(() => fetchDogs())
+      .catch(() => {
+        setDogs(previousDogs);
+        toast.error("Dog updating failed!");
+      })
+      .finally(() => setIsLoading(false));
   };
 
-  const handleDeleteRequest = async (dogId: number) => {
+  const handleDeleteRequest = async (dogId: number): Promise<void> => {
     setIsLoading(true);
     const previousDogs = [...dogs];
     setDogs((prevDog) =>
       prevDog.filter((existingDog) => existingDog.id !== dogId)
     );
-    try {
-      await Requests.deleteDogRequest(dogId);
-    } catch (error) {
-      setDogs(previousDogs);
-      toast.error("Failed to delete dog. Please try again.");
-    } finally {
-      setIsLoading(false);
-    }
+    return Requests.deleteDogRequest(dogId)
+      .then(() => {
+        toast.success("The dog was deleted successfully!");
+        return fetchDogs();
+      })
+      .catch(() => {
+        setDogs(previousDogs);
+        toast.error("Dog deleting failed!");
+      })
+      .finally(() => setIsLoading(false));
   };
 
-  const onClickHandler = (fav: boolean, isCreateDogBtn = false) => {
-    let newTab = activeTab;
-    if (isCreateDogBtn) {
-      newTab = activeTab !== "selectedCreateDog" ? "selectedCreateDog" : "";
-    } else if (fav) {
-      newTab = activeTab !== "selectedFav" ? "selectedFav" : "";
-    } else {
-      newTab = activeTab !== "selectedUnFav" ? "selectedUnFav" : "";
-    }
-    setActiveTab(newTab);
-    localStorage.setItem("activeTab", newTab);
+  const onClickHandler = (value: TActiveTab) => {
+    const isSameActiveTab = value === activeTab;
+    const newActiveTab = isSameActiveTab ? "all" : value;
+    setActiveTab(newActiveTab);
+  };
+
+  const favDogs = dogs.filter((dog) => dog.isFavorite);
+  const unFavDogs = dogs.filter((dog) => !dog.isFavorite);
+
+  const dogsList: Record<TActiveTab, Dog[]> = {
+    all: dogs,
+    fav: favDogs,
+    unFav: unFavDogs,
+    createDog: [],
+  };
+
+  const counters = {
+    favDogs: favDogs.length,
+    unFavDogs: unFavDogs.length,
   };
 
   return (
     <DogContext.Provider
       value={{
-        dogs,
         isLoading,
         activeTab,
         handleDeleteRequest,
         handlePostRequest,
         handleUpdateRequest,
         onClickHandler,
+        visibleDogs: dogsList[activeTab],
+        counters,
       }}
     >
       {children}
