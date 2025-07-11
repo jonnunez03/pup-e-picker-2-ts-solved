@@ -46,7 +46,7 @@
       "name": "Genevieve",
       "image": "/assets/cowardly.png",
       "description": "teal Cab Metrics Inverse though",
-      "isFavorite": true,
+      "isFavorite": false,
       "id": 6
     },
     {

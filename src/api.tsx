@@ -8,7 +8,12 @@ const getAllDogs = () => {
     headers: {
       "Content-Type": "application/json",
     },
-  }).then((response) => response.json());
+  }).then((response) => {
+    if (!response.ok) {
+      throw new Error(`The HTTP request failed with status ${response.status}`);
+    }
+    return response.json();
+  });
 };
 
 const postDog = (dogData: Partial<Dog>) => {
@@ -18,7 +23,12 @@ const postDog = (dogData: Partial<Dog>) => {
       "Content-Type": "application/json",
     },
     body: JSON.stringify(dogData),
-  }).then((response) => response.json());
+  }).then((response) => {
+    if (!response.ok) {
+      throw new Error(`Failed update dog with status ${response.status}`);
+    }
+    return response.json();
+  });
 };
 
 const deleteDogRequest = (id: number) => {

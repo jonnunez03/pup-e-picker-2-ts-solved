@@ -5,8 +5,8 @@ import toast from "react-hot-toast";
 
 type TDogContext = {
   activeTab: string;
-  handleUpdateRequest: (dogId: number, favState: Partial<Dog>) => void;
-  handleDeleteRequest: (dogId: number) => void;
+  handleUpdateRequest: (dogId: number, favState: Partial<Dog>) => Promise<void>;
+  handleDeleteRequest: (dogId: number) => Promise<void>;
   handlePostRequest: (dogData: Partial<Dog>) => Promise<boolean>;
   onClickHandler: (value: TActiveTab) => void;
   isLoading: boolean;
@@ -22,21 +22,26 @@ export const DogContextProvider = ({ children }: { children: ReactNode }) => {
   const [activeTab, setActiveTab] = useState<TActiveTab>("all");
 
   const fetchDogs = () => {
-    Requests.getAllDogs()
+    return Requests.getAllDogs()
       .then(setDogs)
-      .catch(() => toast.error("Dogs fetching failed!"));
+      .catch(() => {
+        toast.error("Dogs fetching failed!");
+      });
   };
 
   useEffect(() => {
-    fetchDogs();
+    fetchDogs()
+      .then(() => {
+        console.log("The dogs were fetched successfully");
+      })
+      .catch(() => {
+        console.log("The dogs fetching failed");
+      });
   }, []);
 
   const handlePostRequest = async (dogData: Partial<Dog>): Promise<boolean> => {
     setIsLoading(true);
-    let previousDogs: Dog[] = [];
-
     setDogs((prevDogs) => {
-      previousDogs = prevDogs;
       const optimisticData: Dog = {
         id: Date.now(),
         isFavorite: false,
@@ -50,12 +55,11 @@ export const DogContextProvider = ({ children }: { children: ReactNode }) => {
     try {
       await Requests.postDog(dogData);
       toast.success("The dog was added successfully!");
-      fetchDogs();
+      await fetchDogs();
       return true;
     } catch (error) {
       toast.error("Unable to create dog!");
-      setDogs(previousDogs);
-      fetchDogs();
+      setDogs(dogs);
       return false;
     } finally {
       setIsLoading(false);
@@ -67,16 +71,17 @@ export const DogContextProvider = ({ children }: { children: ReactNode }) => {
     favState: Partial<Dog>
   ): Promise<void> => {
     setIsLoading(true);
-    const previousDogs = [...dogs];
     setDogs((prevDogs) =>
       prevDogs.map((existingDog) =>
         existingDog.id === dogId ? { ...existingDog, ...favState } : existingDog
       )
     );
     return Requests.patchFavoriteForDog(dogId, favState)
-      .then(() => fetchDogs())
+      .then(() => {
+        toast.success("The dog was updated successfully!");
+      })
       .catch(() => {
-        setDogs(previousDogs);
+        setDogs(dogs);
         toast.error("Dog updating failed!");
       })
       .finally(() => setIsLoading(false));
@@ -84,17 +89,15 @@ export const DogContextProvider = ({ children }: { children: ReactNode }) => {
 
   const handleDeleteRequest = async (dogId: number): Promise<void> => {
     setIsLoading(true);
-    const previousDogs = [...dogs];
     setDogs((prevDog) =>
       prevDog.filter((existingDog) => existingDog.id !== dogId)
     );
     return Requests.deleteDogRequest(dogId)
       .then(() => {
         toast.success("The dog was deleted successfully!");
-        return fetchDogs();
       })
       .catch(() => {
-        setDogs(previousDogs);
+        setDogs(dogs);
         toast.error("Dog deleting failed!");
       })
       .finally(() => setIsLoading(false));

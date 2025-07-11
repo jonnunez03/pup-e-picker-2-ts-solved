@@ -1,6 +1,7 @@
 import { FormEvent, useContext, useState } from "react";
 import { dogPictures } from "../dog-pictures";
 import { DogContext } from "../Context/DogContextProvider";
+import toast from "react-hot-toast";
 
 const defaultSelectedImage = dogPictures.BlueHeeler;
 
@@ -19,12 +20,20 @@ export const CreateDogForm = () => {
 
   const handleOnSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    const success = await handlePostRequest({ name, image, description });
-    if (success) resetForm();
+    try {
+      await handlePostRequest({ name, image, description });
+      resetForm();
+    } catch (error) {
+      toast.error("Failed to create dog!");
+    }
   };
 
   return (
-    <form action="" id="create-dog-form" onSubmit={handleOnSubmit}>
+    <form
+      action=""
+      id="create-dog-form"
+      onSubmit={(e) => void handleOnSubmit(e)}
+    >
       <h4>Create a New Dog</h4>
       <label htmlFor="name">Dog Name</label>
       <input
