@@ -16,12 +16,12 @@ export const Dogs = () => {
         <DogCard
           key={dog.id}
           dog={dog}
-          onTrashIconClick={() => handleDeleteRequest(dog.id)}
+          onTrashIconClick={() => void handleDeleteRequest(dog.id)}
           onHeartClick={() =>
-            handleUpdateRequest(dog.id, { isFavorite: false })
+            void handleUpdateRequest(dog.id, { isFavorite: false })
           }
           onEmptyHeartClick={() =>
-            handleUpdateRequest(dog.id, { isFavorite: true })
+            void handleUpdateRequest(dog.id, { isFavorite: true })
           }
           isLoading={isLoading}
         />

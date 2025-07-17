@@ -7,7 +7,7 @@ type TDogContext = {
   activeTab: string;
   handleUpdateRequest: (dogId: number, favState: Partial<Dog>) => Promise<void>;
   handleDeleteRequest: (dogId: number) => Promise<void>;
-  handlePostRequest: (dogData: Partial<Dog>) => Promise<boolean>;
+  handlePostRequest: (dogData: Partial<Dog>) => Promise<void>;
   onClickHandler: (value: TActiveTab) => void;
   isLoading: boolean;
   visibleDogs: Dog[];
@@ -39,28 +39,16 @@ export const DogContextProvider = ({ children }: { children: ReactNode }) => {
       });
   }, []);
 
-  const handlePostRequest = async (dogData: Partial<Dog>): Promise<boolean> => {
+  const handlePostRequest = async (dogData: Partial<Dog>): Promise<void> => {
     setIsLoading(true);
-    setDogs((prevDogs) => {
-      const optimisticData: Dog = {
-        id: Date.now(),
-        isFavorite: false,
-        name: dogData.name || "Unknown Name",
-        image: dogData.image || "default-image-url.jpg",
-        description: dogData.description || "No description",
-      };
-      return [...prevDogs, optimisticData];
-    });
-
     try {
       await Requests.postDog(dogData);
       toast.success("The dog was added successfully!");
       await fetchDogs();
-      return true;
     } catch (error) {
-      toast.error("Unable to create dog!");
-      setDogs(dogs);
-      return false;
+      throw new Error(
+        `Failed to create dog with status ${(error as Error).message}`
+      );
     } finally {
       setIsLoading(false);
     }
